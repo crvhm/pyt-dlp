@@ -5,6 +5,10 @@ from core import runner as runner
 from PySide6.QtWidgets import QFileDialog
 
 class MyWidget(QtWidgets.QWidget):
+
+    writableDirectory = False
+    validURL = False
+
     def __init__(self):
         super().__init__()
 
@@ -13,6 +17,7 @@ class MyWidget(QtWidgets.QWidget):
 
         #Campo de texto para URL
         self.urlField = QtWidgets.QLineEdit()
+        self.urlField.textChanged.connect(self.checkURL)
         
         #Botón de selección de directorio
         self.directorySearchButton = QtWidgets.QPushButton("Destination Directory")
@@ -36,10 +41,24 @@ class MyWidget(QtWidgets.QWidget):
             caption="Select Destination Directory",
             options=QFileDialog.ShowDirsOnly
         )
-        if runner.checkWritableDirectory(runner.destinationDirectory) and runner.checkValidURL(self.urlField.text()):
+        if runner.checkWritableDirectory(runner.destinationDirectory):
+            self.writableDirectory = True
+        else:
+            self.writableDirectory = False
+        self.directoryLabel.setText(runner.destinationDirectory)
+        self.enableSearchButton()
+
+    def checkURL(self):
+        runner.url = self.urlField.text()
+        if runner.checkValidURL(runner.url):
+            self.validURL = True
+        else:
+            self.validURL = False
+        self.enableSearchButton()
+
+    def enableSearchButton(self):
+        if self.writableDirectory and self.validURL:
             self.urlSearchButton.setEnabled(True)
-            self.directoryLabel.setText(runner.destinationDirectory)
-            runner.url = self.urlField.text()
         else:
             self.urlSearchButton.setEnabled(False)
         
